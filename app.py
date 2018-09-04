@@ -1,12 +1,15 @@
-import time, jsonschema, celeryconfig
+import time, celeryconfig
 from flask import Flask, jsonify, request, Response
 from celery import Celery
 from subprocess import Popen, PIPE
+import jsonschema
 from flask_jsonschema_validator import JSONSchemaValidator
+
 celery = Celery()
 celery.config_from_object(celeryconfig)
 
-@celery.task(bind=True, queue='unified')
+
+@celery.task(bind=True, queue='celery')
 def add(self, x, y):
     cmd = [x, y]
     meta = {'argx': x, 'argy': y}
@@ -21,8 +24,9 @@ def add(self, x, y):
 app = Flask(__name__)
 JSONSchemaValidator(app=app, root='./')
 
+
 @app.route('/longtask', methods=['POST'])
-@app.validate('schema_data', 'register')
+@app.validate('schema', 'register')
 def long_task():
     data = request.get_json()
     x = data['argx']
@@ -42,4 +46,3 @@ def task_status(task_id):
 @app.errorhandler(jsonschema.ValidationError)
 def onValidationError(e):
     return Response('There was a validation error: ' + str(e), 400)
-

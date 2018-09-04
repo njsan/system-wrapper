@@ -1,0 +1,10 @@
+{
+ "register": {
+  "type": "object",
+   "properties": {
+    "argx": {"type": "string"},
+    "argy": {"type": "string"}
+   },
+   "required": ["argx", "argy"]
+  }
+}
