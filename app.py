@@ -1,5 +1,5 @@
 import time, celeryconfig
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request
 from celery import Celery
 from subprocess import Popen, PIPE
 import jsonschema
@@ -12,13 +12,14 @@ celery.config_from_object(celeryconfig)
 @celery.task(bind=True, queue='celery')
 def add(self, x, y):
     cmd = [x, y]
-    meta = {'argx': x, 'argy': y}
+    meta = {'cmd': x, 'arg': y}
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    self.update_state(state='RUNNING', meta={'argx': cmd, 'argy': y})
+    self.update_state(state='RUNNING', meta={'cmd': cmd, 'arg': y})
     time.sleep(60)
     stdout, stderr = p.communicate()
+    output = {'stderr': stderr, 'stdout': stdout}
     return (
-     meta, stderr, stdout)
+     meta, output)
 
 
 app = Flask(__name__)
@@ -38,11 +39,11 @@ def long_task():
 @app.route('/status/<task_id>')
 def task_status(task_id):
     task = task_id
-    info = add.AsyncResult(task).info
-    state = add.AsyncResult(task).state
-    return jsonify(state, info, task)
+    state = {'id': task, 'state': add.AsyncResult(task).state, 'info': add.AsyncResult(task).info}
+    return jsonify(state)
 
 
 @app.errorhandler(jsonschema.ValidationError)
 def onValidationError(e):
-    return Response('There was a validation error: ' + str(e), 400)
+    error = str(e)
+    return jsonify('There was a validation error: ' + error), 400
