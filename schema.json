@@ -3,7 +3,8 @@
   "type": "object",
    "properties": {
     "argx": {"type": "string"},
-    "argy": {"type": "string"}
+    "argy": {"type": "string"},
+    "argz": {"type": "string"}
    },
    "required": ["argx", "argy"]
   }
