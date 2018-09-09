@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from celery import Celery
 from subprocess import Popen, PIPE
 from flask_jsonschema_validator import JSONSchemaValidator
-from helper import redis_exid_register
+from helper import redis_extid_register, redis_extid_exist, redis_get_guid
 
 
 celery = Celery()
@@ -33,11 +33,16 @@ JSONSchemaValidator(app=app, root='./')
 def long_task():
     ext_id = request.headers.get('X-Header-id')
     data = request.get_json()
+    retval = redis_extid_exist(ext_id)
+    if retval:
+        guid = redis_get_guid(ext_id)
+        state = {'conflict': {'ext_id': ext_id, 'guid': guid}}
+        return jsonify(state), 409
     x = data['argx']
     y = data['argy']
     z = data['argz']
     task = add.delay(x, y, z, ext_id).id
-    redis_exid_register(ext_id, task)
+    redis_extid_register(ext_id, task)
     return jsonify(task)
 
 
