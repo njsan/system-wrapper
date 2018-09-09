@@ -28,7 +28,7 @@ app = Flask(__name__)
 JSONSchemaValidator(app=app, root='./')
 
 
-@app.route('/longtask', methods=['POST'])
+@app.route('/task', methods=['PUT'])
 @app.validate('schema', 'register')
 def long_task():
     ext_id = request.headers.get('X-Header-id')
@@ -46,7 +46,7 @@ def long_task():
     return jsonify(task)
 
 
-@app.route('/status/<task_id>')
+@app.route('/task/<task_id>')
 def task_status(task_id):
     task = task_id
     state = {'id': task, 'state': add.AsyncResult(task).state, 'info': add.AsyncResult(task).info}
