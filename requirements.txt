@@ -1,0 +1,4 @@
+redis==2.10.6
+Flask==1.0.2
+flask-jsonschema-validator==0.0.3
+celery==4.2.1
