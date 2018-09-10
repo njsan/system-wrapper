@@ -4,7 +4,7 @@ import redis
 def redis_con():
     r = redis.Redis(
     host='192.168.99.100',
-    port=32770,
+    port=32768,
     password='')
     return r
 

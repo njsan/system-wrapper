@@ -12,13 +12,13 @@ celery = Celery()
 celery.config_from_object(celeryconfig)
 
 
-@celery.task(bind=True, queue='celery')
+@celery.task(bind=True, queue='unified')
 def add(self, x, y, z, q):
     cmd = [x, y, z]
     meta = {'cmd': x, 'argy': y, 'argz': z, 'extid': q}
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     self.update_state(state='RUNNING', meta={'cmd': cmd, 'argy': y, 'argz': z, 'extid': q})
-    time.sleep(5)
+    time.sleep(30)
     stdout, stderr = p.communicate()
     output = {'stderr': stderr, 'stdout': stdout}
     return (meta, output)
@@ -31,7 +31,7 @@ JSONSchemaValidator(app=app, root='./')
 @app.route('/task', methods=['PUT'])
 @app.validate('schema', 'register')
 def long_task():
-    ext_id = request.headers.get('X-Header-id')
+    ext_id = request.headers.get('X-Correlation-ID')
     data = request.get_json()
     retval = redis_extid_exist(ext_id)
     if retval:
